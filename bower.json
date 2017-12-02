@@ -1,0 +1,12 @@
+{
+  "name": "Problem3",
+  "description": "",
+  "main": "index.js",
+  "authors": [
+    "Fan"
+  ],
+  "homepage": "https://github.com/ewfian",
+  "dependencies": {
+    "jquery": "^3.2.1"
+  }
+}
