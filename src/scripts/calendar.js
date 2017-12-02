@@ -1,6 +1,6 @@
 $(document).ready(function () {});
 
-calendar = function () {
+var calendar = function () {
     // 返回指定月份的天数
     this.getDaysOfMonth = function (year, month) {
         return new Date(year, month, 0).getDate();

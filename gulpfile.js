@@ -1,24 +1,23 @@
 // Load plugins
 var gulp = require('gulp'),
     sass = require('gulp-sass'),
-    compass = require('gulp-compass'),
     autoprefixer = require('gulp-autoprefixer'),
     cssnano = require('gulp-cssnano'),
+    babel = require('gulp-babel'),
     minifycss = require('gulp-minify-css'),
-    jshint = require('gulp-jshint'),
+    sourcemaps = require('gulp-sourcemaps'),
+    concat = require('gulp-concat'),
     uglify = require('gulp-uglify'),
     rename = require('gulp-rename'),
-    concat = require('gulp-concat'),
-    cache = require('gulp-cache'),
-    browserSync = require("browser-sync").create();
+    browserSync = require('browser-sync').create(),
     del = require('del');
 
 
 // 静态服务器
-gulp.task('serve', function() {
+gulp.task('serve', function () {
     browserSync.init({
         server: {
-            baseDir: "./"
+            baseDir: './'
         }
     });
 });
@@ -30,24 +29,32 @@ gulp.task('styles', function () {
         .pipe(sass().on('error', sass.logError))
         .on('error', sass.logError)
         .pipe(autoprefixer('last 2 version'))
-        .pipe(rename({ suffix: '.min' }))
+        .pipe(rename({
+            suffix: '.min'
+        }))
         .pipe(cssnano())
         .pipe(minifycss())
         .pipe(gulp.dest('dist/styles'))
-        .pipe(browserSync.reload({stream: true}));
+        .pipe(browserSync.reload({
+            stream: true
+        }));
 
 });
 
 // Scripts
 gulp.task('scripts', function () {
     return gulp.src('src/scripts/**/*.js')
-        //.pipe(jshint('.jshintrc'))
-        //.pipe(jshint.reporter('default'))
-        //.pipe(concat('main.js'))
-        //.pipe(gulp.dest('dist/scripts'))
-        .pipe(rename({ suffix: '.min' }))
+        .pipe(sourcemaps.init())
+        .pipe(babel({
+            presets: ['env']
+        }))
+        .pipe(concat('all.js'))
         .pipe(uglify())
-        .pipe(gulp.dest('dist/scripts'))
+        .pipe(sourcemaps.write('.'))
+        .pipe(rename({
+            suffix: '.min'
+        }))
+        .pipe(gulp.dest('dist/scripts'));
 });
 
 gulp.task('lib', function () {
@@ -79,7 +86,7 @@ gulp.task('default', ['clean'], function () {
 });
 
 // Watch
-gulp.task('watch',['default','serve'], function () {
+gulp.task('watch', ['default', 'serve'], function () {
 
     // Watch .scss files
     gulp.watch('src/scss/**/*.scss', ['styles']);
