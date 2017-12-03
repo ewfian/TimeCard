@@ -5,56 +5,17 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no" id="viewport" name="viewport">
     <title>Calendar</title>
-    <link rel="stylesheet" href="dist/styles/calendar.min.css">
+    <link rel="stylesheet" href="styles/calendar.min.css">
 </head>
 
 <body>
-    <div class="container">
-        <section class="picker">
-            <div class="year_picker">
-                <span>Year:</span>
-                <select name="">
-                    <option value="2014">2014</option>
-                    <option value="2015">2015</option>
-                    <option value="2016">2016</option>
-                    <option value="2017">2017</option>
-                </select>
-            </div>
-            <table class="month_picker">
-                <tr>
-                    <td>Jan.</td>
-                    <td>Feb.</td>
-                </tr>
-                <tr>
-                    <td>Mar.</td>
-                    <td>Apr.</td>
-                </tr>
-                <tr>
-                    <td>May.</td>
-                    <td class="month_selected">June.</td>
-                </tr>
-                <tr>
-                    <td>July.</td>
-                    <td>Aug.</td>
-                </tr>
-                <tr>
-                    <td>Sept.</td>
-                    <td>Oct.</td>
-                </tr>
-                <tr>
-                    <td>Nov.</td>
-                    <td>Dec.</td>
-                </tr>
-            </table>
-        </section>
-
-        <section class="calendar" id="calendar_container">
-            <!-- table.calendar_table>((thead.calendar_table_title>(th{Sun}*7))+tbody.calendar_table_body>(tr>(td>div.calendar_day>(div.calendar_day_title{04-01}+div.calendar_day_tips{辛苦了!})+(div.calendar_day_content>ul>li{$0:0$:0$}*2)+div.calendar_day_footer{工作日})*7)*5) -->
-        </section>
+    <div id="container">
+        <!-- section.calendar>table.calendar_table>((thead.calendar_table_title>(th{Sun}*7))+tbody.calendar_table_body>(tr>(td>div.calendar_day>(div.calendar_day_title{04-01}+div.calendar_day_tips{辛苦了!})+(div.calendar_day_content>ul>li{$0:0$:0$}*2)+div.calendar_day_footer{工作日})*7)*5) -->
     </div>
-    <script src="dist/scripts/all.min.js"></script>
+    <script src="scripts/all.min.js"></script>
     <script>
-        new Calendar('#calendar_container', 2017, 12);
+        new Calendar('#container');
+
     </script>
 </body>
 

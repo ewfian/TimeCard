@@ -9,7 +9,7 @@ body {
     font-size: 100%;
 }
 
-.container {
+#container {
     margin-right: auto;
     margin-left: auto;
     position: relative;
@@ -41,9 +41,12 @@ body {
                     border: 0.0625rem solid rgba(66, 170, 255, 0.822);
                     background-color: rgba(168, 167, 167, 0.15);
                 }
+                &:active {
+                    background-color: rgba(201, 37, 37, 0.336);
+                }
             }
             .month_selected {
-                background-color: rgba(201, 37, 37, 0.336);
+                background-color: rgba(201, 37, 37, 0.336) !important;
             }
         }
     }
@@ -118,6 +121,9 @@ body {
                     &:last-child {
                         .calendar_day {
                             background-color: rgb(153, 234, 95);
+                            .calendar_day_footer {
+                                color: rgb(207, 0, 0);
+                            }
                         }
                     }
                 }

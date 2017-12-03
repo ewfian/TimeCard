@@ -12,16 +12,14 @@ var gulp = require('gulp'),
     browserSync = require('browser-sync').create(),
     del = require('del');
 
-
 // 静态服务器
 gulp.task('serve', function () {
     browserSync.init({
         server: {
-            baseDir: './'
+            baseDir: './dist'
         }
     });
 });
-
 
 // Styles
 gulp.task('styles', function () {
@@ -38,7 +36,6 @@ gulp.task('styles', function () {
         .pipe(browserSync.reload({
             stream: true
         }));
-
 });
 
 // Scripts
@@ -54,7 +51,19 @@ gulp.task('scripts', function () {
             suffix: '.min'
         }))
         .pipe(sourcemaps.write('.'))
-        .pipe(gulp.dest('dist/scripts'));
+        .pipe(gulp.dest('dist/scripts'))
+        .pipe(browserSync.reload({
+            stream: true
+        }));
+});
+
+// Html
+gulp.task('html', function () {
+    return gulp.src('*.html')
+        .pipe(gulp.dest('dist/'))
+        .pipe(browserSync.reload({
+            stream: true
+        }));
 });
 
 // Clean
@@ -64,19 +73,15 @@ gulp.task('clean', function () {
 
 // Default task
 gulp.task('default', ['clean'], function () {
-    gulp.start('styles', 'scripts');
+    gulp.start('html', 'styles', 'scripts');
 });
 
 // Watch
 gulp.task('watch', ['default', 'serve'], function () {
-
     // Watch .scss files
     gulp.watch('src/scss/**/*.scss', ['styles']);
-
     // Watch .js files
     gulp.watch('src/scripts/**/*.js', ['scripts']);
-
-    // Watch any files in dist/, reload on change
-    gulp.watch(['dist/**']).on('change', browserSync.reload);
-    gulp.watch(['*.html']).on('change', browserSync.reload);
+    // Watch html files
+    gulp.watch('*.html', ['html']);
 });
