@@ -50,39 +50,21 @@ gulp.task('scripts', function () {
         }))
         .pipe(concat('all.js'))
         .pipe(uglify())
-        .pipe(sourcemaps.write('.'))
         .pipe(rename({
             suffix: '.min'
         }))
+        .pipe(sourcemaps.write('.'))
         .pipe(gulp.dest('dist/scripts'));
-});
-
-gulp.task('lib', function () {
-    //bootstrap
-    gulp.src('src/lib/bootstrap/dist/css/bootstrap.min.css')
-        .pipe(gulp.dest('dist/lib/css'));
-    gulp.src('src/lib/bootstrap/dist/fonts/*.*')
-        .pipe(gulp.dest('dist/lib/fonts'));
-    gulp.src('src/lib/bootstrap/dist/js/bootstrap.min.js')
-        .pipe(gulp.dest('dist/lib/js'));
-    //jquery
-    gulp.src('src/lib/jquery/dist/jquery.min.js')
-        .pipe(gulp.dest('dist/lib/js'));
-    //font-awesome
-    gulp.src('src/lib/font-awesome/css/font-awesome.min.css')
-        .pipe(gulp.dest('dist/lib/css'));
-    gulp.src('src/lib/font-awesome/fonts/*.*')
-        .pipe(gulp.dest('dist/lib/fonts'));
 });
 
 // Clean
 gulp.task('clean', function () {
-    return del(['dist/styles', 'dist/scripts', 'dist/compass-css', 'dist/lib']);
+    return del('dist/');
 });
 
 // Default task
 gulp.task('default', ['clean'], function () {
-    gulp.start('lib', 'styles', 'scripts');
+    gulp.start('styles', 'scripts');
 });
 
 // Watch
@@ -97,5 +79,4 @@ gulp.task('watch', ['default', 'serve'], function () {
     // Watch any files in dist/, reload on change
     gulp.watch(['dist/**']).on('change', browserSync.reload);
     gulp.watch(['*.html']).on('change', browserSync.reload);
-
 });
