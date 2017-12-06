@@ -1,18 +1,17 @@
 class Calendar {
     constructor(query, data) {
         this.container = document.querySelector(query);
+        this.data = data || this._mock();
 
         let now = new Date();
         this.currentYear = now.getFullYear();
         this.currentMonth = now.getMonth() + 1;
-
-        this.data = data || this._mock();
-
         this.build();
         this.bindEvent();
         this.updade();
     }
 
+    //创建日历的框架
     build() {
         let root = this.container;
         root.innerHTML = '<section class="picker">\
@@ -34,10 +33,11 @@ class Calendar {
         let month_picker = root.querySelector('.month_picker');
 
         //创建年份选择器
-        for (let i = 0; i < 5; i++) {
+        for (let i = -1; i < 5; i++) {
             let option = document.createElement('option');
             option.value = this.currentYear - i;
             option.text = this.currentYear - i;
+            if (i === 0) option.selected = 'selected';
             year_select.appendChild(option);
         }
 
@@ -73,20 +73,33 @@ class Calendar {
         header.appendChild(trh);
     }
 
+    //创建（更新）当月的日历表格
     updade() {
         //本月的全部日期
         let days = this._generateDays(this.currentYear, this.currentMonth);
 
-        //本月的假期和调休的工作日
-        let free = this.holidays.hasOwnProperty(this.currentYear) ? this.holidays[this.currentYear].free : [];
-        let work = this.holidays.hasOwnProperty(this.currentYear) ? this.holidays[this.currentYear].work : [];
+        //本年的假期和调休的工作日
+        let {
+            free = [], work = []
+        } = this.holidays[this.currentYear] || {};
 
-        //本月的工作数据
-        let data = this.data.hasOwnProperty(this.currentYear) ? this.data[this.currentYear] : [];
+        //本年的工作数据
+        let data = this.data[this.currentYear] || {};
 
+        //处理本年12月填充的下一年的数据
+        if (days.slice(-1)[0].getFullYear() != this.currentYear) {
+            Object.assign(data, (this.data[this.currentYear + 1] || {}));
+            let holidayOfNextYear = this.holidays[this.currentYear + 1] || {
+                free: [],
+                work: []
+            };
+            free.push(...holidayOfNextYear.free);
+            work.push(...holidayOfNextYear.work);
+        }
+
+        //创建tbody
         let scbody = this.container.querySelector('.calendar_table_body');
         scbody.innerHTML = '';
-        //创建tbody
         for (let i = 0; i < days.length / 7; i++) {
             //创建一行
             let trb = document.createElement('tr');
@@ -111,13 +124,13 @@ class Calendar {
                 let footer = document.createElement('div');
                 footer.className = 'calendar_day_footer';
 
-                if ((currentDay.getDay() === 0 || currentDay.getDay() === 6) && (work.indexOf(formatDateFull(currentDay)) === -1)) {
-                    //周末
-                    footer.appendChild(document.createTextNode('周末'));
-                    footer.classList.add('calendar_day_footer_holiday');
-                } else if (free.indexOf(formatDateFull(currentDay)) != -1) {
+                if (free.indexOf(formatDateFull(currentDay)) != -1) {
                     //节假日
                     footer.appendChild(document.createTextNode('节假日'));
+                    footer.classList.add('calendar_day_footer_holiday');
+                } else if ((currentDay.getDay() === 0 || currentDay.getDay() === 6) && (work.indexOf(formatDateFull(currentDay)) === -1)) {
+                    //周末
+                    footer.appendChild(document.createTextNode('周末'));
                     footer.classList.add('calendar_day_footer_holiday');
                 } else {
                     //工作日
@@ -176,16 +189,19 @@ class Calendar {
         }
     }
 
+    //绑定和处理事件
     bindEvent() {
         let year_select = this.container.querySelector('#year_select');
         let month_picker = this.container.querySelector('.month_picker');
         let lastSelectedMonth = this.container.querySelector('.month_selected');
 
+        //年份选择器
         year_select.onchange = () => {
-            this.currentYear = year_select.options[year_select.selectedIndex].value;
+            this.currentYear = parseInt(year_select.options[year_select.selectedIndex].value);
             this.updade();
         };
 
+        //月份选择器
         [].forEach.call(month_picker.querySelectorAll('td'), (td, index) => {
             td.onclick = () => {
 
@@ -199,6 +215,7 @@ class Calendar {
         });
     }
 
+    //生成当月的日期数组
     _generateDays(year, month) {
         let days = [];
 
@@ -226,6 +243,7 @@ class Calendar {
         return days;
     }
 
+    //生成mock数据
     _mock() {
         let data = {};
         let attendances = [{
@@ -330,7 +348,11 @@ Calendar.prototype.holidays = {
         work: ['20160206', '20160214', '20160612', '20160918', '20161008', '20161009']
     },
     '2017': {
-        free: ['20170102', '20170126', '20170127', '20170130', '20170131', '20170201', '20170202', '20170403', '20170404', '20170501', '20170529', '20170530', '20171002', '20171003', '20171004', '20171005', '20171006'],
+        free: ['20170102', '20170126', '20170127', '20170130', '20170131', '20170201', '20170202', '20170403', '20170404', '20170501', '20170529', '20170530', '20171002', '20171003', '20171004', '20171005', '20171006', '20171230', '20171231'],
         work: ['20170122', '20170204', '20170401', '20170527', '20170930']
+    },
+    '2018': {
+        free: ['20180101', '20180215', '20180216', '20180217', '20180218', '20180219', '20180220', '20180221', '20180405', '20180406', '20180407', '20180429', '20180430', '20180501', '20180616', '20180617', '20180618', '20180922', '20180923', '20180924', '20181001', '20181002', '20181003', '20181004', '20181005', '20181006', '20181007'],
+        work: ['20180211', '20180224', '20180408', '20180428', '20180929', '20180930']
     }
 };
