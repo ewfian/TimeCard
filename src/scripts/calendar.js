@@ -186,7 +186,7 @@ class Calendar {
             this.updade();
         };
 
-        month_picker.querySelectorAll('td').forEach((td, index) => {
+        [].forEach.call(month_picker.querySelectorAll('td'), (td, index) => {
             td.onclick = () => {
 
                 lastSelectedMonth.classList.remove('month_selected');

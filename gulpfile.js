@@ -41,7 +41,7 @@ gulp.task('styles', function () {
 
 // Scripts
 gulp.task('scripts', function () {
-    return gulp.src('src/scripts/**/*.js')
+    return gulp.src(['src/scripts/polyfill.js','src/scripts/**/*.js'])
         .pipe(sourcemaps.init())
         .pipe(babel({
             presets: ['env']
