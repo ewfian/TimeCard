@@ -1,14 +1,16 @@
 class Calendar {
-    constructor(query) {
+    constructor(query, data) {
         this.container = document.querySelector(query);
 
         let now = new Date();
         this.currentYear = now.getFullYear();
         this.currentMonth = now.getMonth() + 1;
 
+        this.data = data || this._mock();
+
         this.build();
-        this.updade();
         this.bindEvent();
+        this.updade();
     }
 
     build() {
@@ -49,7 +51,7 @@ class Calendar {
                 let text = document.createTextNode(monthName[index]);
                 td.appendChild(text);
 
-                if (index == this.currentMonth - 1) {
+                if (index === this.currentMonth - 1) {
                     td.classList.add('month_selected');
                 }
                 tr.appendChild(td);
@@ -72,7 +74,16 @@ class Calendar {
     }
 
     updade() {
-        let days = this.generateDays(this.currentYear, this.currentMonth);
+        //本月的全部日期
+        let days = this._generateDays(this.currentYear, this.currentMonth);
+
+        //本月的假期和调休的工作日
+        let free = this.holidays.hasOwnProperty(this.currentYear) ? this.holidays[this.currentYear].free : [];
+        let work = this.holidays.hasOwnProperty(this.currentYear) ? this.holidays[this.currentYear].work : [];
+
+        //本月的工作数据
+        let data = this.data.hasOwnProperty(this.currentYear) ? this.data[this.currentYear] : [];
+
         let scbody = this.container.querySelector('.calendar_table_body');
         scbody.innerHTML = '';
         //创建tbody
@@ -80,55 +91,88 @@ class Calendar {
             //创建一行
             let trb = document.createElement('tr');
             for (let j = 0; j < 7; j++) {
-                let index = 7 * i + j;
-                let currentDay = days[index].getDay();
+                let currentDay = days[7 * i + j];
 
+                //当日容器div
                 let td = document.createElement('td');
                 let day = document.createElement('div');
                 day.className = 'calendar_day';
+                //非本月变淡
+                if (this.currentMonth != currentDay.getMonth() + 1) {
+                    day.classList.add('fade');
+                }
 
-                //title
+                //title（日期）
                 let title = document.createElement('div');
                 title.className = 'calendar_day_title';
-                //tips
-                let tips = document.createElement('div');
-                tips.className = 'calendar_day_tips';
-                //content
-                let content = document.createElement('div');
-                content.className = 'calendar_day_content';
+                title.appendChild(document.createTextNode(formatDate(currentDay)));
+
                 //footer
                 let footer = document.createElement('div');
                 footer.className = 'calendar_day_footer';
 
-                title.appendChild(document.createTextNode(this._formatDate(days[index])));
-                tips.appendChild(document.createTextNode('辛苦了!'));
+                if ((currentDay.getDay() === 0 || currentDay.getDay() === 6) && (work.indexOf(formatDateFull(currentDay)) === -1)) {
+                    //周末
+                    footer.appendChild(document.createTextNode('周末'));
+                    footer.classList.add('calendar_day_footer_holiday');
+                } else if (free.indexOf(formatDateFull(currentDay)) != -1) {
+                    //节假日
+                    footer.appendChild(document.createTextNode('节假日'));
+                    footer.classList.add('calendar_day_footer_holiday');
+                } else {
+                    //工作日
+                    footer.appendChild(document.createTextNode('工作日'));
 
-                let ul = document.createElement('ul');
-                for (let i = 0; i < 2; i++) {
-                    let li = document.createElement('li');
-                    let text = document.createTextNode('08:52:43');
-                    li.appendChild(text);
-                    ul.appendChild(li);
+                    if (data.hasOwnProperty(formatDateFull(currentDay))) {
+                        let currentData = data[formatDateFull(currentDay)];
+
+                        let tipsClasses = ['calendar_day_tips', 'calendar_day_tips_leave', 'calendar_day_tips_late'];
+                        //tips
+                        let tips = document.createElement('div');
+                        tips.className = 'calendar_day_tips';
+                        tips.appendChild(document.createTextNode(currentData.attendance.text));
+                        tips.classList.add(tipsClasses[currentData.attendance.level]);
+
+                        //content
+                        if (currentData.punch_time) {
+                            let content = document.createElement('div');
+                            content.className = 'calendar_day_content';
+                            let ul = document.createElement('ul');
+                            currentData.punch_time.forEach(t => {
+                                let li = document.createElement('li');
+                                let text = document.createTextNode(formatTime(new Date(t)));
+                                li.appendChild(text);
+                                ul.appendChild(li);
+                            });
+                            content.appendChild(ul);
+                            day.appendChild(content);
+                        }
+                        day.appendChild(tips);
+                    }
                 }
-                content.appendChild(ul);
-
-
 
                 day.appendChild(title);
-
-                if (currentDay != 0 && currentDay != 6) {
-                    day.appendChild(tips);
-                    footer.appendChild(document.createTextNode('工作日'));
-                } else {
-                    footer.appendChild(document.createTextNode('周末'));
-                }
-
-                day.appendChild(content);
                 day.appendChild(footer);
                 td.appendChild(day);
                 trb.appendChild(td);
             }
             scbody.appendChild(trb);
+        }
+
+        function formatDate(date) {
+            return tap2(date.getMonth() + 1) + '-' + tap2(date.getDate());
+        }
+
+        function formatDateFull(date) {
+            return date.getFullYear() + '' + tap2(date.getMonth() + 1) + '' + tap2(date.getDate());
+        }
+
+        function formatTime(date) {
+            return tap2(date.getHours()) + ':' + tap2(date.getMinutes()) + ':' + tap2(date.getSeconds());
+        }
+
+        function tap2(i) {
+            return ('0' + i).slice(-2);
         }
     }
 
@@ -142,24 +186,20 @@ class Calendar {
             this.updade();
         };
 
-        month_picker.onclick = (i) => {
-            this.currentMonth = i.path[1].rowIndex * 2 + i.path[0].cellIndex + 1;
-            if (isNaN(this.currentMonth)) return; //没点上cell
+        month_picker.querySelectorAll('td').forEach((td, index) => {
+            td.onclick = () => {
 
-            lastSelectedMonth.classList.remove('month_selected');
-            i.path[0].classList.add('month_selected');
-            lastSelectedMonth = i.path[0];
+                lastSelectedMonth.classList.remove('month_selected');
+                td.classList.add('month_selected');
+                lastSelectedMonth = td;
 
-            this.updade();
-            //console.log(this.currentMonth);
-        };
+                this.currentMonth = index + 1;
+                this.updade();
+            };
+        });
     }
 
-    _formatDate(date) {
-        return (date.getMonth() + 1) + '-' + date.getDate();
-    }
-
-    generateDays(year, month) {
+    _generateDays(year, month) {
         let days = [];
 
         //本月的第一天是周几（上月剩余几天）
@@ -185,4 +225,112 @@ class Calendar {
         //console.log(days);
         return days;
     }
+
+    _mock() {
+        let data = {};
+        let attendances = [{
+            text: '辛苦了!',
+            level: 0
+        }, {
+            text: '需请假',
+            level: 1
+        }, {
+            text: '晚到',
+            level: 2
+        }];
+
+        let currentYear = (new Date()).getFullYear();
+        for (let i = 0; i < 5; i++) {
+            let year = currentYear - i;
+            data[year] = {};
+            for (let j = 0; j < 12; j++) {
+                //本月总天数
+                let totalDays = (new Date(year, j + 1, 0)).getDate();
+
+                //随机生成本月请假和迟到的日期
+                let leave = [];
+                let late = [];
+
+                for (let m = 0; m < rand(0, 3); m++) {
+                    leave.push(rand(1, totalDays));
+                }
+                for (let n = 0; n < rand(0, 2); n++) {
+                    late.push(rand(1, totalDays));
+                }
+
+                for (let k = 1; k <= totalDays; k++) {
+                    let current = new Date(year, j, k);
+                    if (current > new Date()) continue;
+                    let month_day = year + tap2(j + 1) + tap2(k);
+
+                    if (leave.indexOf(k) != -1) {
+                        //请假
+                        data[year][month_day] = {
+                            attendance: attendances[1],
+                        };
+
+                    } else if (late.indexOf(k) != -1) {
+                        //迟到
+                        data[year][month_day] = {
+                            attendance: attendances[2],
+                            punch_time: [
+                                new Date(year, j, k, rand(9, 12), rand(0, 60), rand(0, 60)).toUTCString(),
+                                new Date(year, j, k, rand(17, 18), rand(0, 60), rand(0, 60)).toUTCString()
+                            ]
+                        };
+
+                    } else {
+                        //正常
+                        data[year][month_day] = {
+                            attendance: attendances[0],
+                            punch_time: [
+                                //随机生成当日的上下班时间
+                                new Date(year, j, k, rand(8, 9), rand(0, 60), rand(0, 60)).toUTCString(),
+                                new Date(year, j, k, rand(17, 18), rand(0, 60), rand(0, 60)).toUTCString()
+                            ]
+                        };
+
+                    }
+
+
+                }
+            }
+        }
+        //console.log(data);
+        return data;
+
+        //得到一个两数之间的随机整数，包含端点
+        function rand(min, max) {
+            min = Math.ceil(min);
+            max = Math.floor(max);
+            return Math.floor(Math.random() * (max - min + 1)) + min; //The maximum is inclusive and the minimum is inclusive
+        }
+
+        function tap2(i) {
+            return ('0' + i).slice(-2);
+        }
+    }
 }
+
+Calendar.prototype.holidays = {
+    '2013': {
+        free: ['20130101', '20130102', '20130103', '20130209', '20130210', '20130211', '20130212', '20130213', '20130214', '20130215', '20130404', '20130405', '20130406', '20130429', '20130430', '20130501', '20130610', '20130611', '20130612', '20130919', '20130920', '20130921', '20131001', '20131002', '20131003', '20131004', '20131005', '20131006', '20131007'],
+        work: ['20130105', '20130106', '20130216', '20130217', '20130407', '20130428', '20130608', '20130609', '20130922', '20130929', '20131012']
+    },
+    '2014': {
+        free: ['20140101', '20140131', '20140203', '20140204', '20140205', '20140206', '20140407', '20140501', '20140502', '20140602', '20140908', '20141001', '20141002', '20141003', '20141006', '20141007'],
+        work: ['20140126', '20140208', '20140504', '20140928', '20141011']
+    },
+    '2015': {
+        free: ['20150101', '20150102', '20150218', '20150219', '20150220', '20150223', '20150224', '20150406', '20150501', '20150622', '20150927', '20151001', '20151002', '20151005', '20151006', '20151007'],
+        work: ['20150104', '20150215', '20150228', '20151010']
+    },
+    '2016': {
+        free: ['20160101', '20160208', '20160209', '20160210', '20160211', '20160212', '20160213', '20160404', '20160502', '20160609', '20160610', '20160915', '20160916', '20161003', '20161004', '20161005', '20161006', '20161007'],
+        work: ['20160206', '20160214', '20160612', '20160918', '20161008', '20161009']
+    },
+    '2017': {
+        free: ['20170102', '20170126', '20170127', '20170130', '20170131', '20170201', '20170202', '20170403', '20170404', '20170501', '20170529', '20170530', '20171002', '20171003', '20171004', '20171005', '20171006'],
+        work: ['20170122', '20170204', '20170401', '20170527', '20170930']
+    }
+};
