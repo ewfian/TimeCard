@@ -25,14 +25,16 @@ gulp.task('serve', function () {
 // Styles
 gulp.task('styles', function () {
     return gulp.src('src/scss/**/*.scss')
+        .pipe(sourcemaps.init())
         .pipe(sass().on('error', sass.logError))
         .on('error', sass.logError)
         .pipe(autoprefixer('last 2 version'))
+        .pipe(cssnano())
+        .pipe(minifycss())
         .pipe(rename({
             suffix: '.min'
         }))
-        .pipe(cssnano())
-        .pipe(minifycss())
+        .pipe(sourcemaps.write('.'))
         .pipe(gulp.dest('dist/styles'))
         .pipe(browserSync.reload({
             stream: true
@@ -41,7 +43,7 @@ gulp.task('styles', function () {
 
 // Scripts
 gulp.task('scripts', function () {
-    return gulp.src(['src/scripts/polyfill.js','src/scripts/**/*.js'])
+    return gulp.src(['src/scripts/polyfill.js', 'src/scripts/**/*.js'])
         .pipe(sourcemaps.init())
         .pipe(babel({
             presets: ['env']

@@ -303,7 +303,7 @@ class Calendar {
                             attendance: attendances[0],
                             punch_time: [
                                 //随机生成当日的上下班时间
-                                new Date(year, j, k, rand(8, 9), rand(0, 60), rand(0, 60)).toUTCString(),
+                                new Date(year, j, k, rand(7, 8), rand(0, 60), rand(0, 60)).toUTCString(),
                                 new Date(year, j, k, rand(17, 18), rand(0, 60), rand(0, 60)).toUTCString()
                             ]
                         };
