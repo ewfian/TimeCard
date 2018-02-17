@@ -1,8 +1,8 @@
 # Time Card (Problem3)
 
 ## Demo
-[https://challenge.magiclocker.cn/](https://challenge.magiclocker.cn/)  Or
-[http://120.78.209.107/](http://120.78.209.107/)
+[~~https://challenge.magiclocker.cn/~~](https://challenge.magiclocker.cn/)  Or
+[~~http://120.78.209.107/~~](http://120.78.209.107/)
 
 ## Snapshot
 ![Fig1](Fig1.jpg)
